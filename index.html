@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Kartım</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="cardBox" class="centerBox"></div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+if(!localStorage.getItem("userId")){
+  window.location = "login.html";
+}
+
+const userId = localStorage.getItem("userId");
+const ref = doc(db,"users",userId);
+const snap = await getDoc(ref);
+
+if(snap.exists()){
+  const data = snap.data();
+  document.getElementById("cardBox").innerHTML = `
+    <img src="${data.cardImage}" class="cardImg">
+    <h2>${data.name}</h2>
+    <p>${data.cardNumber}</p>
+    <p>Bakiye: ${data.balance} TL</p>
+  `;
+}
+</script>
+
+</body>
+</html>
