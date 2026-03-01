@@ -6,77 +6,70 @@
 <title>Ödeme</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="center">
 
-<div id="loadingScreen" class="centerBox">
+<div id="loading">
 <div class="spinner"></div>
-<p id="loadingText">Başlatılıyor...</p>
+<p id="text">Başlatılıyor...</p>
 </div>
 
-<div id="successScreen" class="centerBox" style="display:none;">
-<div class="successCircle"><div class="checkmark">✔</div></div>
-<h2 id="resultText"></h2>
+<div id="success" style="display:none;">
+<div class="success">✔</div>
+<h2 id="result"></h2>
 </div>
 
 <script type="module">
 import { db } from "./firebase.js";
-import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc,getDoc,updateDoc,addDoc,collection,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 if(!localStorage.getItem("userId")){
-  const params = new URLSearchParams(window.location.search);
-  const islem = params.get("islem");
-  window.location = "login.html?redirect=kullan&islem=" + islem;
+const p=new URLSearchParams(window.location.search);
+window.location="login.html?redirect=kullan&islem="+p.get("islem");
 }
 
-const params = new URLSearchParams(window.location.search);
-const islem = Number(params.get("islem"));
+const params=new URLSearchParams(window.location.search);
+const islem=Number(params.get("islem"));
 
-if(!islem || islem <= 0){
-  document.getElementById("loadingText").textContent = "Geçersiz işlem";
+const messages=["Bağlanıyor...","Bakiye kontrol...","İşlem yapılıyor..."];
+let i=0;
+const text=document.getElementById("text");
+
+function change(){
+if(i<messages.length){
+text.textContent=messages[i];
+i++;
+setTimeout(change,1000);
 }
-
-const messages = [
-"Bağlantı kuruluyor...",
-"Bakiye kontrol ediliyor...",
-"İşlem gerçekleştiriliyor..."
-];
-
-let step = 0;
-const loadingText = document.getElementById("loadingText");
-
-function changeText(){
-  if(step < messages.length){
-    loadingText.textContent = messages[step];
-    step++;
-    setTimeout(changeText,1000);
-  }
 }
+change();
 
-changeText();
+setTimeout(async()=>{
+const ref=doc(db,"users",localStorage.getItem("userId"));
+const snap=await getDoc(ref);
 
-setTimeout(async ()=>{
+if(snap.exists()){
+const data=snap.data();
 
-  const userId = localStorage.getItem("userId");
-  const ref = doc(db,"users",userId);
-  const snap = await getDoc(ref);
+if(data.balance>=islem){
+const newBalance=data.balance-islem;
+await updateDoc(ref,{balance:newBalance});
 
-  if(snap.exists()){
-    const data = snap.data();
+await addDoc(collection(db,"transactions"),{
+name:data.name,
+surname:data.surname,
+amount:-islem,
+date:serverTimestamp()
+});
 
-    if(data.balance >= islem){
-      const newBalance = data.balance - islem;
-      await updateDoc(ref,{ balance:newBalance });
-
-      document.getElementById("loadingScreen").style.display="none";
-      document.getElementById("successScreen").style.display="flex";
-      document.getElementById("resultText").textContent = islem + " TL çekildi. Yeni bakiye: " + newBalance + " TL";
-    } else {
-      document.getElementById("loadingText").textContent = "Yetersiz bakiye";
-    }
-  }
-
+document.getElementById("loading").style.display="none";
+document.getElementById("success").style.display="block";
+document.getElementById("result").textContent=islem+" TL çekildi";
+}else{
+text.textContent="Yetersiz bakiye";
+}
+}
 },3000);
-
 </script>
+
 </body>
 </html>
