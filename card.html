@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kart</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container" id="box">
+<button id="historyBtn" class="topBtn" style="display:none;">Geçmiş</button>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import { doc,getDoc,updateDoc,addDoc,collection,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+if(!localStorage.getItem("user")){ window.location="index.html"; }
+
+const userEmail=localStorage.getItem("user");
+const userRef=doc(db,"users",userEmail);
+const snap=await getDoc(userRef);
+
+if(snap.exists()){
+const data=snap.data();
+
+if(data.role==="admin"){
+document.getElementById("historyBtn").style.display="block";
+document.getElementById("historyBtn").onclick=()=>window.location="history.html";
+}
+
+document.getElementById("box").innerHTML+=`
+<div class="card">
+<h2>${data.name}</h2>
+<p>${data.cardNumber}</p>
+<p>Bakiye: ${data.balance} TL</p>
+<input id="amount" placeholder="Çekilecek tutar">
+<button onclick="pay()">Para Çek</button>
+</div>
+<div id="result"></div>`;
+
+window.pay=async function(){
+const amount=Number(document.getElementById("amount").value);
+const res=document.getElementById("result");
+res.innerHTML="<div class='spinner'></div>";
+
+setTimeout(async()=>{
+const s=await getDoc(userRef);
+const d=s.data();
+
+if(d.balance>=amount && amount>0){
+await updateDoc(userRef,{balance:d.balance-amount});
+await addDoc(collection(db,"transactions"),{
+name:d.name,
+amount:-amount,
+date:serverTimestamp()
+});
+res.innerHTML="<div class='resultIcon success'>✔</div>";
+}else{
+res.innerHTML="<div class='resultIcon fail'>✖</div>";
+}
+},2000);
+}
+}
+</script>
+</body>
+</html>

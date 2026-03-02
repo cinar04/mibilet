@@ -3,45 +3,70 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Kart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banka</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="container">
 
-<div class="topRight">
-<button id="panelBtn" style="display:none;">PANEL</button>
+<h2>Hesap Oluştur</h2>
+<input id="name" placeholder="Ad Soyad">
+<input id="email" placeholder="E-posta">
+<input id="password" type="password" placeholder="Şifre">
+<input id="adminKey" placeholder="Admin anahtarı (opsiyonel)">
+<button id="register">Oluştur</button>
+
+<h2>Giriş Yap</h2>
+<input id="loginEmail" placeholder="E-posta">
+<input id="loginPass" type="password" placeholder="Şifre">
+<button id="login">Giriş</button>
+
 </div>
-
-<div id="cardBox" class="center"></div>
 
 <script type="module">
 import { db } from "./firebase.js";
-import { doc,getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc,setDoc,getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-if(!localStorage.getItem("userId")){
-window.location="login.html";
+function generateCard(){
+let r="";
+for(let i=0;i<12;i++){ r+=Math.floor(Math.random()*10); }
+return "0969 "+r.substring(0,4)+" "+r.substring(4,8)+" "+r.substring(8,12);
 }
 
-const ref=doc(db,"users",localStorage.getItem("userId"));
-const snap=await getDoc(ref);
+document.getElementById("register").onclick=async()=>{
+const name=name.value;
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
+const adminKey=document.getElementById("adminKey").value;
 
-if(snap.exists()){
-const data=snap.data();
+let role="user";
+if(adminKey==="1234"){ role="admin"; }
 
-if(data.role==="admin"){
-document.getElementById("panelBtn").style.display="block";
-document.getElementById("panelBtn").onclick=()=>window.location="panel.html";
+await setDoc(doc(db,"users",email),{
+name:document.getElementById("name").value,
+email:email,
+password:password,
+balance:0,
+role:role,
+cardNumber:generateCard()
+});
+
+alert("Hesap oluşturuldu");
+};
+
+document.getElementById("login").onclick=async()=>{
+const email=document.getElementById("loginEmail").value;
+const pass=document.getElementById("loginPass").value;
+
+const snap=await getDoc(doc(db,"users",email));
+if(snap.exists() && snap.data().password===pass){
+localStorage.setItem("user",email);
+window.location="card.html";
+}else{
+alert("Hatalı giriş");
 }
-
-document.getElementById("cardBox").innerHTML=`
-<div class="card">
-<img src="${data.cardImage}" width="300">
-<h2>${data.name} ${data.surname}</h2>
-<p>${data.cardNumber}</p>
-<p>Bakiye: ${data.balance} TL</p>
-</div>`;
-}
+};
 </script>
-
 </body>
 </html>

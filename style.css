@@ -1,52 +1,56 @@
 
 body{
 margin:0;
-font-family:Arial;
+font-family:Arial, sans-serif;
 background:linear-gradient(135deg,#0f172a,#1e293b);
 color:white;
 }
 
-.center{
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-flex-direction:column;
-gap:15px;
+.container{
+max-width:420px;
+margin:auto;
+padding:20px;
+position:relative;
+}
+
+.topBtn{
+position:absolute;
+top:10px;
+right:10px;
 }
 
 input,button{
-padding:10px;
-border-radius:8px;
+width:100%;
+padding:12px;
+margin:6px 0;
+border-radius:12px;
 border:none;
+font-size:16px;
 }
 
 button{
 background:#00ff88;
 cursor:pointer;
+font-weight:bold;
 }
 
 .card{
 background:#111827;
 padding:20px;
 border-radius:20px;
-box-shadow:0 0 30px rgba(0,255,136,0.3);
+box-shadow:0 0 25px rgba(0,255,136,0.3);
 text-align:center;
-}
-
-.topRight{
-position:absolute;
-top:20px;
-right:20px;
+margin-top:20px;
 }
 
 .spinner{
-width:120px;
-height:120px;
+width:90px;
+height:90px;
 border:8px solid rgba(255,255,255,0.1);
 border-top:8px solid #00ffcc;
 border-radius:50%;
 animation:spin 1s linear infinite;
+margin:20px auto;
 }
 
 @keyframes spin{
@@ -54,18 +58,18 @@ animation:spin 1s linear infinite;
 100%{transform:rotate(360deg);}
 }
 
-.success{
+.resultIcon{
 font-size:60px;
-color:#00ff88;
+text-align:center;
+margin-top:20px;
 }
 
-.panelBox{
-padding:20px;
-}
+.success{color:#00ff88;}
+.fail{color:red;}
 
-.listItem{
-margin:5px 0;
-padding:5px;
+.historyItem{
 background:#1f2937;
-border-radius:6px;
+padding:10px;
+border-radius:8px;
+margin:5px 0;
 }
